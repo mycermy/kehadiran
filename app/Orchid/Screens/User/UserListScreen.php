@@ -8,6 +8,7 @@ use App\Orchid\Layouts\User\UserEditLayout;
 use App\Orchid\Layouts\User\UserFiltersLayout;
 use App\Orchid\Layouts\User\UserListLayout;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Orchid\Platform\Models\User;
 use Orchid\Screen\Actions\Link;
@@ -25,7 +26,7 @@ class UserListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'users' => User::with('roles')
+            'users' => User::whereNot('id',1)->with('roles')
                 ->filters(UserFiltersLayout::class)
                 ->defaultSort('id', 'desc')
                 ->paginate(),

@@ -69,8 +69,11 @@ return [
     |
     */
 
+    'publicHtml' => env('PUBLIC_HTML', '/public'),
+
     'links' => [
-        public_path('storage') => storage_path('app/public'),
+        // public_path('storage') => storage_path('app/public'),
+        base_path(env('PUBLIC_HTML', '/public') . '/storage') => storage_path('app/public'),
     ],
 
 ];
