@@ -46,4 +46,20 @@ class Ahli extends Model
         'updated_at',
         'created_at',
     ];
+
+    // ===================== ORM Definition START ===================== //
+
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class);
+    }
+
+    // /**
+    //  * @return BelongsTo
+    //  */
+    // public function updatedBy() {
+    //     return $this->belongsTo(User::class, 'updated_by');
+    // }
+
+    // ===================== ORM Definition END ===================== //
 }

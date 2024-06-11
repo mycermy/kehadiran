@@ -3,6 +3,8 @@
 namespace App\Orchid\Screens\Kehadiran;
 
 use App\Models\Ahli;
+use App\Models\Kelas;
+use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
@@ -30,7 +32,7 @@ class Ahli_ListScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Ahli_ListScreen';
+        return 'Senarai Ahli';
     }
 
     /**
@@ -62,9 +64,11 @@ class Ahli_ListScreen extends Screen
             Layout::table('model', [
                 TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('nama')->sort()->filter(),
-                TD::make('nokp')->sort()->filter(),
+                TD::make('nokp', 'No. K/P')->sort()->filter(),
                 TD::make('tahap')->sort()->filter(),
-                TD::make('kelas_id')->sort()->filter(),
+                TD::make('kelas_id', 'Kelas')->sort()
+                    ->filter(Relation::make()->fromModel(Kelas::class, 'nama_kelas')->searchColumns('ting', 'nama_kelas')->displayAppend('full'))
+                    ->render(fn($target) => $target->kelas->ting . ' ' . $target->kelas->nama_kelas ?? null),
             ]),
         ];
     }

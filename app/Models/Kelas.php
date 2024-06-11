@@ -35,4 +35,9 @@ class Kelas extends Model
         'updated_at',
         'created_at',
     ];
+
+    public function getFullAttribute(): string
+    {
+        return sprintf('%s (%s)', $this->ting, $this->nama_kelas);
+    }
 }
