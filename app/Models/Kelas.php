@@ -36,6 +36,20 @@ class Kelas extends Model
         'created_at',
     ];
 
+    // ===================== ORM Definition START ===================== //
+
+    public function ahlis()
+    {
+        return $this->hasMany(Ahli::class);
+    }
+
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
+
+    // ===================== ORM Definition END ===================== //
+
     public function getFullAttribute(): string
     {
         return sprintf('%s (%s)', $this->ting, $this->nama_kelas);

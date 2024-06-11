@@ -24,7 +24,7 @@ class Kelas_ListScreen extends Screen
     public function query(): iterable
     {
         return [
-            'model' => Kelas::filters()
+            'model' => Kelas::withCount('ahlis')->filters()
                         ->orderBy('ting')
                         ->orderBy('nama_kelas')
                         ->paginate(),
@@ -77,8 +77,10 @@ class Kelas_ListScreen extends Screen
         return [
             Layout::table('model', [
                 TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
-                TD::make('ting', 'Tingkatan')->sort()->filter(),
+                TD::make('full', 'Kelas'),
+                TD::make('ting', 'Tingkatan')->sort()->filter()->alignCenter(),
                 TD::make('nama_kelas', 'Nama Kelas')->sort()->filter(),
+                TD::make('ahlis_count', 'Jumlah Ahli')->alignCenter(),
 
                 TD::make('Actions')
                 // ->canSee(Auth::user()->hasAnyAccess(['platform.contacts.editor']))
@@ -135,7 +137,7 @@ class Kelas_ListScreen extends Screen
                     ModalToggle::make('Edit')
                         ->icon('pencil')
                         ->modal('asyncEditModal')
-                        ->modalTitle('Edit Kelas: ' . $target->ting . ' ' . $target->nama_kelas)
+                        ->modalTitle('Edit Kelas: ' . $target->full)
                         ->method('update')
                         ->asyncParameters([
                             'kelas' => $target->id,

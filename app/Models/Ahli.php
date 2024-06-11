@@ -62,4 +62,9 @@ class Ahli extends Model
     // }
 
     // ===================== ORM Definition END ===================== //
+
+    public function getFullAttribute(): string
+    {
+        return sprintf('%s (%s)', $this->nama, $this->nokp);
+    }
 }
