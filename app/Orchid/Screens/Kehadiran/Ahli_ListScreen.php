@@ -7,6 +7,9 @@ use App\Models\Kelas;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Orchid\Attachment\File;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\ModalToggle;
@@ -14,6 +17,8 @@ use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Password;
 use Orchid\Screen\Fields\Relation;
+use Orchid\Screen\Fields\Select;
+use Orchid\Screen\Fields\Upload;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
@@ -30,8 +35,8 @@ class Ahli_ListScreen extends Screen
     {
         return [
             'model' => Ahli::filters()
-                        ->orderBy('nama')
-                        ->paginate(),
+                ->orderBy('nama')
+                ->paginate(),
         ];
     }
 
@@ -61,13 +66,18 @@ class Ahli_ListScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            ModalToggle::make('New Ahli')
+            ModalToggle::make('Tambah Ahli')
                 ->modal('xpressAddModal')
                 ->method('store')
                 // ->parameters([
                 //     'contactType' => Contact::TYPE_CUSTOMER
                 // ])
                 ->icon('bs.plus-circle'),
+
+            ModalToggle::make(__('Muat Naik'))
+                ->icon('bs.cloud-upload')
+                ->modal('xpressBulkUpload')
+                ->method('uploadCsv'),
         ];
     }
 
@@ -83,22 +93,30 @@ class Ahli_ListScreen extends Screen
                 TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('nama')->sort()->filter(),
                 TD::make('nokp', 'No. K/P')->sort()->filter(),
-                TD::make('tahap')->sort()->filter(),
+                TD::make('email', 'E-mel')->sort()->filter(),
                 TD::make('kelas_id', 'Kelas')->sort()
-                    ->filter(Relation::make()->fromModel(Kelas::class, 'nama_kelas')->searchColumns('ting', 'nama_kelas')->displayAppend('full'))
-                    ->render(fn($target) => $target->kelas->ting . ' ' . $target->kelas->nama_kelas ?? null),
+                    ->filter(Relation::make()->fromModel(Kelas::class, 'nama_kelas')->searchColumns('ting', 'nama_kelas')->displayAppend('kelasFullName'))
+                    ->render(fn ($target) => $target->kelas->kelasFullName ?? null),
+                // ->render(fn($target) => $target->kelas->ting . ' ' . $target->kelas->nama_kelas ?? null),
 
                 TD::make('Actions')
-                // ->canSee(Auth::user()->hasAnyAccess(['platform.contacts.editor']))
-                ->width('10px')
-                ->render(
-                    fn ($target) =>
-                    $this->getTableActions($target)
-                        ->alignCenter()
-                        ->autoWidth()
-                        ->render()
-                ),
+                    // ->canSee(Auth::user()->hasAnyAccess(['platform.contacts.editor']))
+                    ->width('10px')
+                    ->render(
+                        fn ($target) =>
+                        $this->getTableActions($target)
+                            ->alignCenter()
+                            ->autoWidth()
+                            ->render()
+                    ),
             ]),
+
+            // Bulk upload list with csv
+            Layout::modal('xpressBulkUpload', Layout::rows([
+                Input::make('csv_file')
+                    ->title('csv file')
+                    ->type('file'),
+            ]))->title('Bulk upload senarai ahli')->rawClick(),
 
             //Add Modal
             Layout::modal('xpressAddModal', Layout::rows([
@@ -112,15 +130,26 @@ class Ahli_ListScreen extends Screen
                     ->required()
                     ->horizontal(),
 
-                Input::make('ahli.tahap')
-                    ->title('Tahap')
+                Select::make('ahli.jantina')
+                    ->title('Jantina')
+                    // ->allowAdd()
+                    ->options([
+                        1  => 'LELAKI',
+                        2  => 'PEREMPUAN',
+                    ])
+                    ->empty('No select')
                     ->required()
+                    ->horizontal(),
+
+                Input::make('ahli.email')
+                    ->title('E-mel')
+                    // ->required()
                     ->horizontal(),
 
                 Relation::make('ahli.kelas_id')
                     ->fromModel(Kelas::class, 'nama_kelas')
                     ->searchColumns('ting', 'nama_kelas')
-                    ->displayAppend('full')
+                    ->displayAppend('kelasFullName')
                     ->title('Kelas')
                     ->required()
                     ->horizontal(),
@@ -145,19 +174,30 @@ class Ahli_ListScreen extends Screen
                     ->required()
                     ->horizontal(),
 
-                Input::make('ahli.tahap')
-                    ->title('Tahap')
+                Select::make('ahli.jantina')
+                    ->title('Jantina')
+                    // ->allowAdd()
+                    ->options([
+                        1  => 'LELAKI',
+                        2  => 'PEREMPUAN',
+                    ])
+                    ->empty('No select')
+                    ->required()
+                    ->horizontal(),
+
+                Input::make('ahli.email')
+                    ->title('E-mel')
                     ->required()
                     ->horizontal(),
 
                 Relation::make('ahli.kelas_id')
                     ->fromModel(Kelas::class, 'nama_kelas')
                     ->searchColumns('ting', 'nama_kelas')
-                    ->displayAppend('full')
+                    ->displayAppend('kelasFullName')
                     ->title('Kelas')
                     ->required()
                     ->horizontal(),
-                
+
                 Password::make('ahli.katalaluan')
                     ->placeholder('Leave empty to keep current password')
                     ->title(__('Katalaluan'))
@@ -202,6 +242,17 @@ class Ahli_ListScreen extends Screen
      */
     public function store(Request $request, Ahli $ahli)
     {
+        $request->validate([
+            'ahli.nokp' => [
+                'required',
+                Rule::unique(Ahli::class, 'nokp')->ignore($ahli)
+            ],
+            'ahli.email' => [
+                // 'required',
+                Rule::unique(Ahli::class, 'email')->ignore($ahli),
+            ],
+        ]);
+
         $ahli->when($request->filled('ahli.katalaluan'), function (Builder $builder) use ($request) {
             $builder->getModel()->katalaluan = Hash::make($request->input('ahli.katalaluan'));
         });
@@ -221,6 +272,17 @@ class Ahli_ListScreen extends Screen
      */
     public function update(Request $request, Ahli $ahli)
     {
+        $request->validate([
+            'ahli.nokp' => [
+                'required',
+                Rule::unique(Ahli::class, 'nokp')->ignore($ahli)
+            ],
+            'ahli.email' => [
+                'required',
+                Rule::unique(Ahli::class, 'email')->ignore($ahli),
+            ],
+        ]);
+
         $ahli->when($request->filled('ahli.katalaluan'), function (Builder $builder) use ($request) {
             $builder->getModel()->katalaluan = Hash::make($request->input('ahli.katalaluan'));
         });
@@ -251,5 +313,78 @@ class Ahli_ListScreen extends Screen
         return [
             'ahli' => $ahli,
         ];
+    }
+
+    public function uploadCsv(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt',
+        ]);
+
+        // 
+        $file = $request->file('csv_file');
+        
+        // // for debugging
+        // $mimeType = $file->getMimeType();
+        // $extension = $file->getClientOriginalExtension();
+        
+        // // Log the values for debugging
+        // Log::info("MIME type: $mimeType, Extension: $extension");
+        
+        // save csv file
+        // $file->storeAs('public/csv/uploads', $file->hashName());
+
+        //read csv file and skip data
+        $handle = fopen($file->path(), 'r');
+
+        //skip the header row
+        fgetcsv($handle);
+
+
+        $chunksize = 25;
+
+
+        while (!feof($handle)) {
+            $chunkdata = [];
+
+            for ($i = 0; $i < $chunksize; $i++) {
+                $data = fgetcsv($handle);
+                if ($data === false) {
+                    break;
+                }
+                $chunkdata[] = $data;
+            }
+
+            $this->processChunkData($chunkdata);
+        }
+        fclose($handle);
+
+        Toast::info(__('Bulk senarai ahli was saved'));
+
+        return redirect()->back()->with('success', 'Data has been added successfully.');
+        // return redirect()->route('kehadiran.ahli')->with('success', 'Data has been added successfully.');
+    }
+
+    public function processChunkData($chunkdata)
+    {
+        foreach ($chunkdata as $column) {
+            // Extract column values
+            [$tingkatan, $namaKelas, $nokp, $namaAhli, $jantina, $email, $katalaluan] = $column;
+
+            // Create or retrieve Kelas
+            $kelas = Kelas::firstOrCreate([
+                'ting' => $tingkatan,
+                'nama_kelas' => $namaKelas,
+            ]);
+
+            // Find existing Ahli by nokp or create a new one
+            $ahli = Ahli::firstOrNew(['nokp' => $nokp]);
+            $ahli->kelas_id = $kelas->id;
+            $ahli->nama = $namaAhli;
+            $ahli->jantina = $jantina;
+            $ahli->email = $email;
+            $ahli->katalaluan = $katalaluan;
+            $ahli->save();
+        }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\Kehadiran;
 
 use App\Models\Kelas;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Actions\DropDown;
 use Orchid\Screen\Actions\ModalToggle;
@@ -57,13 +58,17 @@ class Kelas_ListScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            ModalToggle::make('New Kelas')
+            ModalToggle::make('Tambah Kelas')
                 ->modal('xpressAddModal')
                 ->method('store')
                 // ->parameters([
                 //     'contactType' => Contact::TYPE_CUSTOMER
                 // ])
                 ->icon('bs.plus-circle'),
+
+            // Button::make(__('Muat Naik'))
+            //     ->icon('bs.cloud-upload')
+            //     ->method('uploadCsv'),
         ];
     }
 
@@ -77,7 +82,7 @@ class Kelas_ListScreen extends Screen
         return [
             Layout::table('model', [
                 TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
-                TD::make('full', 'Kelas'),
+                TD::make('kelasFullName', 'Kelas'),
                 TD::make('ting', 'Tingkatan')->sort()->filter()->alignCenter(),
                 TD::make('nama_kelas', 'Nama Kelas')->sort()->filter(),
                 TD::make('ahlis_count', 'Jumlah Ahli')->alignCenter(),
@@ -102,7 +107,7 @@ class Kelas_ListScreen extends Screen
                     ->horizontal(),
 
                 Input::make('kelas.nama_kelas')
-                    ->title('Nama Aktiviti')
+                    ->title('Nama Kelas')
                     ->required()
                     ->horizontal(),
             ]))->title('Create New Kelas'),
@@ -115,7 +120,7 @@ class Kelas_ListScreen extends Screen
                     ->horizontal(),
 
                 Input::make('kelas.nama_kelas')
-                    ->title('Nama Aktiviti')
+                    ->title('Nama Kelas')
                     ->required()
                     ->horizontal(),
             ]))->async('asyncGetKelas'),
@@ -158,6 +163,14 @@ class Kelas_ListScreen extends Screen
      */
     public function store(Request $request, Kelas $kelas)
     {
+        $request->validate([
+            'kelas.ting' => 'required',
+            'kelas.nama_kelas' => [
+                'required',
+                Rule::unique(Kelas::class, 'nama_kelas')->where('ting', $request->input('kelas.ting'))->ignore($kelas)
+            ]
+        ]);
+
         $kelas->fill($request->get('kelas'));
 
         $kelas->save();
@@ -173,6 +186,14 @@ class Kelas_ListScreen extends Screen
      */
     public function update(Request $request, Kelas $kelas)
     {
+        $request->validate([
+            'kelas.ting' => 'required',
+            'kelas.nama_kelas' => [
+                'required',
+                Rule::unique(Kelas::class, 'nama_kelas')->where('ting', $request->input('kelas.ting'))->ignore($kelas)
+            ]
+        ]);
+
         $kelas->fill($request->input('kelas'));
 
         $kelas->save();

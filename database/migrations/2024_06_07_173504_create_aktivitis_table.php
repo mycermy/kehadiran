@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->text('nama_aktiviti');
             $table->date('tarikh');
-            $table->string('masa_mula');
+            $table->time('masa_mula');
             $table->timestamps();
         });
     }

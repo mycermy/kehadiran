@@ -19,7 +19,8 @@ return new class extends Migration
                   ->cascadeOnUpdate();
             $table->string('nama');
             $table->string('nokp')->unique();
-            $table->string('tahap');
+            $table->string('jantina')->nullable();
+            $table->string('email')->unique()->nullable();
             $table->string('katalaluan');
             $table->timestamps();
         });

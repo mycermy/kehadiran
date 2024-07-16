@@ -19,7 +19,7 @@ class Ahli extends Model
         'kelas_id',
         'nama',
         'nokp',
-        'tahap',
+        'email',
         'katalaluan',
     ];
 
@@ -32,7 +32,7 @@ class Ahli extends Model
         'kelas_id'      => Where::class,
         'nama'          => Like::class,
         'nokp'          => Like::class,
-        'tahap'          => Like::class,
+        'email'          => Like::class,
         'updated_at'    => WhereDateStartEnd::class,
         'created_at'    => WhereDateStartEnd::class,
     ];
@@ -42,7 +42,7 @@ class Ahli extends Model
         'kelas_id',
         'nama',
         'nokp',
-        'tahap',
+        'email',
         'updated_at',
         'created_at',
     ];

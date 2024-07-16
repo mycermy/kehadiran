@@ -23,7 +23,7 @@ class Kehadiran_ListScreen extends Screen
      */
     public function name(): ?string
     {
-        return 'Kehadiran_ListScreen';
+        return 'Laporan Kehadiran';
     }
 
     /**

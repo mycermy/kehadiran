@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('ting');
             $table->string('nama_kelas');
             $table->timestamps();
+
+            $table->unique(['ting','nama_kelas']);
         });
     }
 

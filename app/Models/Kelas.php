@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasCompositeKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Orchid\Filters\Filterable;
@@ -14,6 +15,9 @@ class Kelas extends Model
 {
     use HasFactory;
     use AsSource, Filterable;
+    // use HasCompositeKey;
+
+    // protected $primary = ['ting', 'nama_kelas'];
 
     protected $fillable = [
         'ting',
@@ -50,8 +54,9 @@ class Kelas extends Model
 
     // ===================== ORM Definition END ===================== //
 
-    public function getFullAttribute(): string
+    public function getKelasFullNameAttribute(): string
     {
-        return sprintf('%s (%s)', $this->ting, $this->nama_kelas);
+        return sprintf('%s %s', $this->ting, $this->nama_kelas);
+        // return sprintf('%s (%s)', $this->ting, $this->nama_kelas);
     }
 }
