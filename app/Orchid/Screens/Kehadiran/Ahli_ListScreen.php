@@ -4,6 +4,7 @@ namespace App\Orchid\Screens\Kehadiran;
 
 use App\Models\Ahli;
 use App\Models\Kelas;
+use App\Orchid\Layouts\Kehadiran\ChartDonut;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -37,6 +38,12 @@ class Ahli_ListScreen extends Screen
             'model' => Ahli::filters()
                 ->orderBy('nama')
                 ->paginate(),
+
+            'piechart_gender' => Ahli::countForGroup('jantina')->toChart(),
+
+            'piechart_tingkatan' => Kelas::join('ahlis','ahlis.kelas_id', '=', 'kelas.id')
+                ->countForGroup('ting','T')->toChart(),
+
         ];
     }
 
@@ -89,6 +96,11 @@ class Ahli_ListScreen extends Screen
     public function layout(): iterable
     {
         return [
+            Layout::columns([
+                ChartDonut::make('piechart_gender', 'Komposisi Jantina'),
+                ChartDonut::make('piechart_tingkatan', 'Jumlah Ahli Mengikut Tingkatan'),
+            ]),
+
             Layout::table('model', [
                 TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
                 TD::make('nama')->sort()->filter(),

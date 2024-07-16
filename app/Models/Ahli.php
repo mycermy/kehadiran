@@ -2,18 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\Metrics\Chartable_mod;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Orchid\Filters\Filterable;
 use Orchid\Filters\Types\Like;
 use Orchid\Filters\Types\Where;
 use Orchid\Filters\Types\WhereDateStartEnd;
+use Orchid\Metrics\Chartable;
 use Orchid\Screen\AsSource;
 
 class Ahli extends Model
 {
     use HasFactory;
     use AsSource, Filterable;
+    use Chartable_mod;
 
     protected $fillable = [
         'kelas_id',
