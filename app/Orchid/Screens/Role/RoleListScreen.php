@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Orchid\Screens\Role;
 
 use App\Orchid\Layouts\Role\RoleListLayout;
+use Illuminate\Database\Eloquent\Builder;
 use Orchid\Platform\Models\Role;
 use Orchid\Screen\Action;
 use Orchid\Screen\Actions\Link;
@@ -19,8 +20,14 @@ class RoleListScreen extends Screen
      */
     public function query(): iterable
     {
+        $id = auth()->id();
+        
         return [
-            'roles' => Role::filters()->defaultSort('id', 'desc')->paginate(),
+            'roles' => Role::
+                when($id != 1, function (Builder $query) {
+                    $query->whereNot('id', 1); 
+                })
+                ->filters()->defaultSort('id', 'desc')->paginate(),
         ];
     }
 

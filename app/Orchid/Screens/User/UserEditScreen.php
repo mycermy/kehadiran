@@ -151,6 +151,10 @@ class UserEditScreen extends Screen
      */
     public function save(User $user, Request $request)
     {
+        if (auth()->id() != 1 and $user->id == 1) {
+            return redirect()->route('platform.systems.users');
+        }
+
         $request->validate([
             'user.email' => [
                 'required',
@@ -186,6 +190,10 @@ class UserEditScreen extends Screen
      */
     public function remove(User $user)
     {
+        if ($user->id == 1) {
+            return redirect()->route('platform.systems.users');
+        }
+        
         $user->delete();
 
         Toast::info(__('User was removed'));

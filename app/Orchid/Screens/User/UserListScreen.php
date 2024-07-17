@@ -7,6 +7,7 @@ namespace App\Orchid\Screens\User;
 use App\Orchid\Layouts\User\UserEditLayout;
 use App\Orchid\Layouts\User\UserFiltersLayout;
 use App\Orchid\Layouts\User\UserListLayout;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -25,8 +26,13 @@ class UserListScreen extends Screen
      */
     public function query(): iterable
     {
+        $id = auth()->id();
+        
         return [
-            'users' => User::whereNot('id',1)->with('roles')
+            'users' => User::with('roles')
+                ->when($id != 1, function (Builder $query) {
+                    $query->whereNot('id', 1); 
+                })
                 ->filters(UserFiltersLayout::class)
                 ->defaultSort('id', 'desc')
                 ->paginate(),
@@ -112,7 +118,12 @@ class UserListScreen extends Screen
 
     public function remove(Request $request): void
     {
-        User::findOrFail($request->get('id'))->delete();
+        $id = $request->get('id');
+        User::when($id != 1, function (Builder $builder) use($id) {
+            $builder->findOrFail($id)->delete();
+        });
+
+        // User::findOrFail($request->get('id'))->delete();
 
         Toast::info(__('User was removed'));
     }
