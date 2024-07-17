@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('aktivitis', function (Blueprint $table) {
             $table->id();
             $table->text('nama_aktiviti');
+            $table->text('keterangan')->nullable();
             $table->date('tarikh');
-            $table->time('masa_mula');
+            $table->time('masa_mula')->nullable();
             $table->timestamps();
         });
     }

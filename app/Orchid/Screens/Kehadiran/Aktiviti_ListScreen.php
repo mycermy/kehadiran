@@ -10,6 +10,7 @@ use Orchid\Screen\Actions\ModalToggle;
 use Orchid\Screen\Fields\DateTimer;
 use Orchid\Screen\Fields\Group;
 use Orchid\Screen\Fields\Input;
+use Orchid\Screen\Fields\TextArea;
 use Orchid\Screen\Screen;
 use Orchid\Screen\TD;
 use Orchid\Support\Facades\Layout;
@@ -103,14 +104,22 @@ class Aktiviti_ListScreen extends Screen
                     ->allowInput()
                     ->horizontal(),
 
-                Input::make('aktiviti.masa_mula')
+                DateTimer::make('aktiviti.masa_mula')
                     ->title('Masa Mula')
+                    ->noCalendar()
+                    ->format('h:i K') // Specify time format
+                    // ->allowInput()
                     ->required()
                     ->horizontal(),
 
                 Input::make('aktiviti.nama_aktiviti')
                     ->title('Nama Aktiviti')
                     ->required()
+                    ->horizontal(),
+                
+                TextArea::make('aktiviti.keterangan')
+                    ->title('Keterangan Aktiviti')
+                    ->rows(5)
                     ->horizontal(),
             ]))->title('Create New Aktiviti'),
 
@@ -122,14 +131,22 @@ class Aktiviti_ListScreen extends Screen
                     ->allowInput()
                     ->horizontal(),
 
-                Input::make('aktiviti.masa_mula')
+                DateTimer::make('aktiviti.masa_mula')
                     ->title('Masa Mula')
+                    ->noCalendar()
+                    ->format('h:i K') // Specify time format
+                    // ->allowInput()
                     ->required()
                     ->horizontal(),
 
                 Input::make('aktiviti.nama_aktiviti')
                     ->title('Nama Aktiviti')
                     ->required()
+                    ->horizontal(),
+                
+                TextArea::make('aktiviti.keterangan')
+                    ->title('Keterangan Aktiviti')
+                    ->rows(5)
                     ->horizontal(),
             ]))->async('asyncGetAktiviti'),
         ];
