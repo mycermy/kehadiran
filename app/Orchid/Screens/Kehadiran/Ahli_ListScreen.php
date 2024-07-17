@@ -364,7 +364,11 @@ class Ahli_ListScreen extends Screen
                 if ($data === false) {
                     break;
                 }
-                $chunkdata[] = $data;
+                
+                // Trim each column value
+                $trimmedData = array_map('trim', $data);
+                $chunkdata[] = $trimmedData;
+                // $chunkdata[] = $data;
             }
 
             $this->processChunkData($chunkdata);
