@@ -78,11 +78,24 @@ class Aktiviti_ListScreen extends Screen
     {
         return [
             Layout::table('model', [
-                TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
-                TD::make('tarikh')->sort()->filter(TD::FILTER_DATE_RANGE),
+                // TD::make('id', '#')->render(fn ($target, object $loop) => $loop->iteration + (request('page') > 0 ? (request('page') - 1) * $target->getPerPage() : 0)),
+                TD::make('tarikh')->sort()->filter(TD::FILTER_DATE_RANGE)->width(150),
                 // TD::make('tarikh')->sort()->filter(TD::FILTER_DATE),
-                TD::make('masa_mula', 'Masa Mula')->sort()->filter(),
-                TD::make('nama_aktiviti','Nama Aktiviti')->sort()->filter(),
+                // TD::make('masa_mula', 'Masa Mula')->sort()->filter(),
+                TD::make('nama_aktiviti','Nama Aktiviti')->sort()->filter()
+                    ->width('600')
+                    ->filter(Input::make())
+                    ->render(fn ($target) =>
+                    "
+                        <div class='col-md'>
+                            <div class='card-header'>". $target->tarikh ."</div>
+                            <div class='card-body'>
+                                <h5 class='card-title mb-3'> $target->nama_aktiviti </h5>
+                                <p class='blockquote-footer'>". $target->masa_mula ."</p>
+                                <p class='card-text'> $target->keterangan </p>
+                            </div>
+                        </div>
+                    "),
 
                 TD::make('Actions')
                 // ->canSee(Auth::user()->hasAnyAccess(['platform.contacts.editor']))
