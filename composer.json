@@ -6,9 +6,9 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "laravel/framework": "^11.36",
+        "laravel/framework": "^11.36.1",
         "laravel/tinker": "^2.9",
-        "orchid/platform": "14.35"
+        "orchid/platform": "14.35.1"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14.9",
